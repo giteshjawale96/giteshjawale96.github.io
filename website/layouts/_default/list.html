@@ -24,6 +24,8 @@
   </div>
   <div class="post-list">
     {{ range .Pages }}
+    {{ $cat := "" }}
+    {{ with index .Params.categories 0 }}{{ $cat = . | lower }}{{ end }}
     <div class="post-list-item">
       <div class="post-list-body">
         <div class="post-list-meta">
@@ -36,31 +38,60 @@
       </div>
       <div class="post-list-thumb">
         {{ with .Params.cover }}<img src="{{ . }}" alt="{{ $.Title }}" loading="lazy" />
-        {{ else }}<div class="post-list-thumb-placeholder">Post</div>{{ end }}
+        {{ else }}<div class="post-list-thumb-placeholder{{ if in $cat "ai" }} tc-ai{{ else if in $cat "sre" }} tc-sre{{ else if in $cat "platform" }} tc-platform{{ else if in $cat "observ" }} tc-obs{{ else }} tc-default{{ end }}">
+          <span class="thumb-abbr">{{ with index .Params.categories 0 }}{{ . | upper | truncate 3 "" }}{{ else }}PST{{ end }}</span>
+        </div>{{ end }}
       </div>
     </div>
     {{ end }}
   </div>
 
   {{ else if eq .Section "blog" }}
+
+  {{/* ── Inline Search Bar ── */}}
+  <div class="blog-search-bar">
+    <div class="blog-search-inner">
+      <svg class="bsi-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="search" id="blog-search-input" class="bsi-input"
+        placeholder="Search articles, topics, tags..." autocomplete="off" spellcheck="false" />
+      <button id="blog-search-clear" class="bsi-clear" aria-label="Clear search" style="display:none">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  {{/* ── Filters + count ── */}}
   <div class="blog-controls">
     <div class="filter-strip">
-      <a href="/tags/" class="filter-chip">All Tags</a>
-      <a href="/categories/" class="filter-chip">Categories</a>
-      {{ range first 5 .Site.Taxonomies.tags.ByCount }}
+      {{ range first 6 .Site.Taxonomies.tags.ByCount }}
       <a href="{{ .Page.Permalink }}" class="filter-chip">{{ .Page.Title }}</a>
       {{ end }}
     </div>
-    <a href="/search/" class="btn btn-secondary btn-sm">Search</a>
+    <span class="post-count" id="post-count">{{ len .Pages }} articles</span>
   </div>
-  <div class="post-list">
-    {{ range .Pages }}
+
+  {{/* ── Search results (shown when user types) ── */}}
+  <div id="blog-search-results" class="post-list" style="display:none" aria-live="polite"></div>
+  <p id="blog-no-results" class="search-hint" style="display:none">No articles found for that search.</p>
+
+  {{/* ── Paginated post list ── */}}
+  <div class="post-list" id="blog-post-list">
+    {{ range .Paginator.Pages }}
+    {{ $cat := "" }}
+    {{ with index .Params.categories 0 }}{{ $cat = . | lower }}{{ end }}
     <div class="post-list-item">
       <div class="post-list-body">
         <div class="post-list-meta">
           <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format $.Site.Params.dateFormat }}</time>
           {{ if $.Site.Params.showReadingTime }}<span class="meta-dot"></span><span>{{ .ReadingTime }} min read</span>{{ end }}
-          {{ with index .Params.categories 0 }}<span class="meta-dot"></span><span>{{ . }}</span>{{ end }}
+          {{ with index .Params.categories 0 }}<span class="meta-dot"></span><a href="{{ "/categories/" | relURL }}{{ . | urlize }}/" class="post-list-cat">{{ . }}</a>{{ end }}
         </div>
         <h2 class="post-list-title"><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
         {{ with .Description }}<p class="post-list-summary">{{ . }}</p>
@@ -69,12 +100,105 @@
       </div>
       <div class="post-list-thumb">
         {{ with .Params.cover }}<img src="{{ . }}" alt="{{ $.Title }}" loading="lazy" />
-        {{ else }}<div class="post-list-thumb-placeholder">Post</div>{{ end }}
+        {{ else }}<div class="post-list-thumb-placeholder{{ if in $cat "ai" }} tc-ai{{ else if in $cat "sre" }} tc-sre{{ else if in $cat "platform" }} tc-platform{{ else if in $cat "observ" }} tc-obs{{ else }} tc-default{{ end }}">
+          <span class="thumb-abbr">{{ with index .Params.categories 0 }}{{ . | upper | truncate 3 "" }}{{ else }}PST{{ end }}</span>
+        </div>{{ end }}
       </div>
     </div>
     {{ end }}
   </div>
-  {{ template "_internal/pagination.html" . }}
+
+  {{ partial "pagination.html" . }}
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script>
+  (function () {
+    const input    = document.getElementById('blog-search-input');
+    const clearBtn = document.getElementById('blog-search-clear');
+    const results  = document.getElementById('blog-search-results');
+    const noRes    = document.getElementById('blog-no-results');
+    const postList = document.getElementById('blog-post-list');
+    const countEl  = document.getElementById('post-count');
+    const totalCount = {{ len .Pages }};
+    let fuse;
+
+    fetch('/index.json')
+      .then(r => r.json())
+      .then(data => {
+        fuse = new Fuse(data, {
+          keys: ['title', 'summary', 'tags'],
+          threshold: 0.4,
+          includeScore: true,
+          minMatchCharLength: 2,
+        });
+      });
+
+    function gradientClass(tags) {
+      const t = (tags || []).join(' ').toLowerCase();
+      if (t.includes('ai') || t.includes('llm') || t.includes('rag')) return 'tc-ai';
+      if (t.includes('sre') || t.includes('incident') || t.includes('alert')) return 'tc-sre';
+      if (t.includes('platform') || t.includes('terraform') || t.includes('gitops')) return 'tc-platform';
+      if (t.includes('observ') || t.includes('prometheus') || t.includes('loki')) return 'tc-obs';
+      if (t.includes('kubernetes') || t.includes('k8s') || t.includes('eks')) return 'tc-default';
+      return 'tc-default';
+    }
+
+    function renderItem(item) {
+      const tags = (item.tags || []).slice(0, 3)
+        .map(t => `<a href="/tags/${t.toLowerCase().replace(/\s+/g, '-')}/" class="tag">${t}</a>`)
+        .join('');
+      const gc = gradientClass(item.tags);
+      return `
+        <div class="post-list-item">
+          <div class="post-list-body">
+            <div class="post-list-meta">
+              <time>${item.date || ''}</time>
+            </div>
+            <h2 class="post-list-title"><a href="${item.url}">${item.title}</a></h2>
+            <p class="post-list-summary">${(item.summary || '').substring(0, 160)}</p>
+            <div class="post-list-tags">${tags}</div>
+          </div>
+          <div class="post-list-thumb">
+            <div class="post-list-thumb-placeholder ${gc}">
+              <span class="thumb-abbr">PST</span>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function reset() {
+      results.style.display = 'none';
+      noRes.style.display   = 'none';
+      postList.style.display = '';
+      clearBtn.style.display = 'none';
+      countEl.textContent = totalCount + ' articles';
+    }
+
+    input.addEventListener('input', function () {
+      const q = this.value.trim();
+      if (!fuse || q.length < 2) { reset(); return; }
+      clearBtn.style.display = 'flex';
+      const hits = fuse.search(q);
+      postList.style.display = 'none';
+      if (hits.length === 0) {
+        results.style.display = 'none';
+        noRes.style.display   = 'block';
+        countEl.textContent = '0 articles';
+      } else {
+        noRes.style.display = 'none';
+        results.innerHTML = hits.map(h => renderItem(h.item)).join('');
+        results.style.display = '';
+        countEl.textContent = hits.length + ' article' + (hits.length === 1 ? '' : 's');
+      }
+    });
+
+    clearBtn.addEventListener('click', function () {
+      input.value = '';
+      input.focus();
+      reset();
+    });
+  })();
+  </script>
 
   {{ else }}
   <div class="content-list">

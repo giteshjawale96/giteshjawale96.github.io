@@ -1,9 +1,15 @@
+{{ $cat := "" }}
+{{ with index .Params.categories 0 }}{{ $cat = . | lower }}{{ end }}
 <article class="post-card">
-  {{ with .Params.cover }}
-  <a href="{{ $.Permalink }}" class="post-card-image-link" tabindex="-1" aria-hidden="true">
+  <a href="{{ .Permalink }}" class="post-card-image-link" tabindex="-1" aria-hidden="true">
+    {{ with .Params.cover }}
     <img src="{{ . }}" alt="{{ $.Title }}" class="post-card-image" loading="lazy" />
+    {{ else }}
+    <div class="post-card-image post-card-gradient{{ if in $cat "ai" }} tc-ai{{ else if in $cat "sre" }} tc-sre{{ else if in $cat "platform" }} tc-platform{{ else if in $cat "observ" }} tc-obs{{ else }} tc-default{{ end }}">
+      <span class="thumb-abbr-lg">{{ with index .Params.categories 0 }}{{ . | upper | truncate 3 "" }}{{ else }}PST{{ end }}</span>
+    </div>
+    {{ end }}
   </a>
-  {{ end }}
   <div class="post-card-body">
     <div class="post-card-meta">
       <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format $.Site.Params.dateFormat }}</time>
@@ -15,7 +21,7 @@
     <h2 class="post-card-title">
       <a href="{{ .Permalink }}">{{ .Title }}</a>
     </h2>
-    <p class="post-card-summary">{{ .Summary | plainify | truncate 140 }}</p>
+    <p class="post-card-summary">{{ with .Description }}{{ . | truncate 120 }}{{ else }}{{ .Summary | plainify | truncate 120 }}{{ end }}</p>
     <div class="post-card-tags">
       {{ range first 3 .Params.tags }}
       <a href="{{ "/tags/" | relURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>
