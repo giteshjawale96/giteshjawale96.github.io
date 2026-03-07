@@ -113,21 +113,30 @@
       pre.appendChild(btn);
 
       btn.addEventListener('click', function () {
-        const code = pre.querySelector('code');
-        let text;
-        if (code) {
-          // Clone and remove Hugo/Chroma line number spans.
-          // Hugo uses .lnt (inline mode) or .ln (table mode) depending on config.
-          const clone = code.cloneNode(true);
-          clone.querySelectorAll('.ln, .lnt').forEach(function (el) { el.remove(); });
-          text = clone.innerText;
-          // Regex fallback: strip leading digits that are fused directly to code
-          // e.g. "1readinessProbe:" → "readinessProbe:". Safe — only removes
-          // digits at column-0 immediately followed by a non-space character.
-          text = text.replace(/^\d+(?=[^\s\d])/gm, '');
-        } else {
-          text = pre.innerText;
+        // Walk the live DOM tree, collecting text from all nodes except
+        // Chroma line-number spans (.lnt inline mode, .ln table mode, .lnl label).
+        // DOM-walk is more reliable than clone+innerText which has detached-node issues.
+        var text = '';
+        var root = pre.querySelector('code') || pre;
+
+        function walk(node) {
+          if (node.nodeType === 3) {          // text node — collect it
+            text += node.textContent;
+          } else if (node.nodeType === 1) {   // element node
+            var cl = node.classList;
+            if (cl.contains('lnt') || cl.contains('ln') || cl.contains('lnl')) {
+              return;                         // skip line-number spans entirely
+            }
+            if (node === btn) { return; }     // skip the Copy button itself
+            node.childNodes.forEach(walk);
+          }
         }
+        walk(root);
+
+        // Safety regex: if numbers still leaked (e.g. "1readinessProbe:"), strip them.
+        text = text.replace(/^\d+\t/gm, '');            // digits + tab at line start
+        text = text.replace(/^\d+(?=[^\s\d])/gm, '');  // digits fused to code
+
         navigator.clipboard.writeText(text).then(function () {
           btn.textContent = 'Copied!';
           btn.style.color = 'var(--green)';
