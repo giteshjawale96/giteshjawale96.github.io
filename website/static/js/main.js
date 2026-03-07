@@ -116,10 +116,15 @@
         const code = pre.querySelector('code');
         let text;
         if (code) {
-          // Clone and strip line number spans Hugo injects (class="ln")
+          // Clone and remove Hugo/Chroma line number spans.
+          // Hugo uses .lnt (inline mode) or .ln (table mode) depending on config.
           const clone = code.cloneNode(true);
-          clone.querySelectorAll('.ln').forEach(function (el) { el.remove(); });
+          clone.querySelectorAll('.ln, .lnt').forEach(function (el) { el.remove(); });
           text = clone.innerText;
+          // Regex fallback: strip leading digits that are fused directly to code
+          // e.g. "1readinessProbe:" → "readinessProbe:". Safe — only removes
+          // digits at column-0 immediately followed by a non-space character.
+          text = text.replace(/^\d+(?=[^\s\d])/gm, '');
         } else {
           text = pre.innerText;
         }

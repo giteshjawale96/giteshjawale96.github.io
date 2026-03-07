@@ -949,3 +949,60 @@ ul, ol { padding-left: 1.5rem; }
   .container, .container-narrow { padding: 0 1.25rem; }
   .post-layout, .post-footer { padding-left: 1.25rem; padding-right: 1.25rem; }
 }
+
+/* ============================================================
+   Large monitor breakpoints (1440px, 1920px, 2560px)
+   ============================================================ */
+
+/* 1440px — large laptop / small 24" monitor */
+@media (min-width: 1440px) {
+  .container { max-width: 1280px; }
+  .nav { max-width: 1280px; }
+  .post-layout {
+    max-width: 1160px;
+    grid-template-columns: 1fr 240px;
+    gap: 4rem;
+  }
+  .post-footer, .comments-section { max-width: 1160px; }
+  .pillars-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+/* 1920px — 24" / 27" Full HD & QHD monitors */
+@media (min-width: 1920px) {
+  html { font-size: 18px; }
+  .container { max-width: 1440px; }
+  .nav { max-width: 1440px; }
+  .container-narrow { max-width: 800px; }
+  .post-layout {
+    max-width: 1320px;
+    grid-template-columns: 1fr 260px;
+    gap: 4.5rem;
+    padding: 3.5rem 2rem 5rem;
+  }
+  .post-footer, .comments-section { max-width: 1320px; }
+  .posts-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .projects-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .hero { padding: 6rem 0 5rem; }
+  .section { padding: 5.5rem 0; }
+}
+
+/* 2560px — 32" QHD / 4K monitors */
+@media (min-width: 2560px) {
+  html { font-size: 19px; }
+  .container { max-width: 1800px; }
+  .nav { max-width: 1800px; }
+  .container-narrow { max-width: 900px; }
+  .post-layout {
+    max-width: 1680px;
+    grid-template-columns: 1fr 300px;
+    gap: 5rem;
+    padding: 4rem 2rem 6rem;
+  }
+  .post-footer, .comments-section { max-width: 1680px; }
+  .posts-grid { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); }
+  .projects-grid { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); }
+  .pillars-grid { gap: 2px; }
+  .hero { padding: 7rem 0 6rem; }
+  .section { padding: 6rem 0; }
+  .toc-inner { padding: 1.5rem; }
+}
