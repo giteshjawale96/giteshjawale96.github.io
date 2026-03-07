@@ -104,7 +104,7 @@
       btn.setAttribute('aria-label', 'Copy code');
       btn.style.cssText = [
         'position:absolute', 'top:0.6rem', 'right:0.6rem',
-        'background:var(--bg-elevated)', 'color:var(--text-muted)',
+        'background:var(--bg-3)', 'color:var(--text-2)',
         'border:1px solid var(--border)', 'border-radius:5px',
         'font-size:0.72rem', 'font-weight:600', 'padding:0.25rem 0.6rem',
         'cursor:pointer', 'transition:all 0.2s', 'font-family:var(--font-sans)'
@@ -114,12 +114,21 @@
 
       btn.addEventListener('click', function () {
         const code = pre.querySelector('code');
-        navigator.clipboard.writeText(code ? code.innerText : pre.innerText).then(function () {
+        let text;
+        if (code) {
+          // Clone and strip line number spans Hugo injects (class="ln")
+          const clone = code.cloneNode(true);
+          clone.querySelectorAll('.ln').forEach(function (el) { el.remove(); });
+          text = clone.innerText;
+        } else {
+          text = pre.innerText;
+        }
+        navigator.clipboard.writeText(text).then(function () {
           btn.textContent = 'Copied!';
           btn.style.color = 'var(--green)';
           setTimeout(function () {
             btn.textContent = 'Copy';
-            btn.style.color = 'var(--text-muted)';
+            btn.style.color = 'var(--text-2)';
           }, 2000);
         });
       });
