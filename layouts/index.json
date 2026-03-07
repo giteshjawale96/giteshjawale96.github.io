@@ -1,0 +1,14 @@
+{{- $pages := where .Site.RegularPages "Section" "blog" -}}
+{{- $pages = where $pages ".Params.draft" "ne" true -}}
+[
+{{- range $i, $p := $pages -}}
+{{- if $i}},{{ end -}}
+{
+  "title":   {{ $p.Title | jsonify }},
+  "url":     {{ $p.Permalink | jsonify }},
+  "summary": {{ $p.Summary | plainify | jsonify }},
+  "tags":    {{ $p.Params.tags | jsonify }},
+  "date":    {{ $p.Date.Format "Jan 2, 2006" | jsonify }}
+}
+{{- end -}}
+]

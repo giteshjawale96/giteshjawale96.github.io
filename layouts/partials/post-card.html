@@ -1,0 +1,25 @@
+<article class="post-card">
+  {{ with .Params.cover }}
+  <a href="{{ $.Permalink }}" class="post-card-image-link" tabindex="-1" aria-hidden="true">
+    <img src="{{ . }}" alt="{{ $.Title }}" class="post-card-image" loading="lazy" />
+  </a>
+  {{ end }}
+  <div class="post-card-body">
+    <div class="post-card-meta">
+      <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format $.Site.Params.dateFormat }}</time>
+      {{ if $.Site.Params.showReadingTime }}
+      <span class="separator" aria-hidden="true">·</span>
+      <span>{{ .ReadingTime }} min read</span>
+      {{ end }}
+    </div>
+    <h2 class="post-card-title">
+      <a href="{{ .Permalink }}">{{ .Title }}</a>
+    </h2>
+    <p class="post-card-summary">{{ .Summary | plainify | truncate 140 }}</p>
+    <div class="post-card-tags">
+      {{ range first 3 .Params.tags }}
+      <a href="{{ "/tags/" | relURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>
+      {{ end }}
+    </div>
+  </div>
+</article>

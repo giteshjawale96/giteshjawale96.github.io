@@ -1,0 +1,111 @@
+{{ define "main" }}
+<article class="post-article">
+  {{- /* Post header */}}
+  <header class="post-header">
+    <div class="container post-header-inner">
+      {{ with .Params.categories }}
+      <div class="post-categories">
+        {{ range . }}
+        <a href="{{ "/categories/" | relURL }}{{ . | urlize }}/" class="category-link">{{ . }}</a>
+        {{ end }}
+      </div>
+      {{ end }}
+
+      <h1 class="post-title">{{ .Title }}</h1>
+
+      {{ with .Description }}
+      <p class="post-description">{{ . }}</p>
+      {{ end }}
+
+      <div class="post-meta">
+        <div class="post-meta-author">
+          <span class="meta-label">By</span>
+          <span class="meta-value">{{ .Params.author | default .Site.Params.author }}</span>
+        </div>
+        <div class="post-meta-date">
+          <span class="meta-label">Published</span>
+          <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format .Site.Params.dateFormat }}</time>
+        </div>
+        {{ if .Site.Params.showReadingTime }}
+        <div class="post-meta-reading">
+          <span class="meta-label">Reading time</span>
+          <span class="meta-value">{{ .ReadingTime }} min</span>
+        </div>
+        {{ end }}
+      </div>
+
+      {{ with .Params.tags }}
+      <div class="post-tags">
+        {{ range . }}
+        <a href="{{ "/tags/" | relURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>
+        {{ end }}
+      </div>
+      {{ end }}
+    </div>
+
+    {{ with .Params.cover }}
+    <div class="post-cover-container">
+      <img src="{{ . }}" alt="{{ $.Title }}" class="post-cover" />
+    </div>
+    {{ end }}
+  </header>
+
+  {{- /* Post body with optional TOC */}}
+  <div class="container post-body-container">
+    {{ if and .Site.Params.showTOC (gt (len .TableOfContents) 100) }}
+    <aside class="post-toc" id="toc">
+      <div class="toc-inner">
+        <h3 class="toc-title">Table of Contents</h3>
+        {{ .TableOfContents }}
+      </div>
+    </aside>
+    {{ end }}
+
+    <div class="post-content prose">
+      {{ .Content }}
+    </div>
+  </div>
+
+  {{- /* Post footer */}}
+  <footer class="post-footer">
+    <div class="container">
+      {{ with .Params.tags }}
+      <div class="post-footer-tags">
+        <span class="footer-label">Tagged:</span>
+        {{ range . }}
+        <a href="{{ "/tags/" | relURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>
+        {{ end }}
+      </div>
+      {{ end }}
+
+      {{- /* Prev/Next navigation */}}
+      <nav class="post-nav" aria-label="Post navigation">
+        {{ with .PrevInSection }}
+        <div class="post-nav-item post-nav-prev">
+          <span class="nav-label">&larr; Previous</span>
+          <a href="{{ .Permalink }}" class="nav-title">{{ .Title }}</a>
+        </div>
+        {{ end }}
+        {{ with .NextInSection }}
+        <div class="post-nav-item post-nav-next">
+          <span class="nav-label">Next &rarr;</span>
+          <a href="{{ .Permalink }}" class="nav-title">{{ .Title }}</a>
+        </div>
+        {{ end }}
+      </nav>
+
+      <div class="post-back">
+        <a href="/blog/" class="btn btn-secondary btn-sm">&larr; Back to Blog</a>
+      </div>
+    </div>
+  </footer>
+</article>
+
+{{- /* Mermaid init */}}
+{{ if .Params.mermaid }}
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default' });
+</script>
+{{ end }}
+{{ end }}
