@@ -98,7 +98,12 @@
 
     /* ── Copy code button ──────────────────────────────────── */
     document.querySelectorAll('.prose pre').forEach(function (pre) {
-      const btn = document.createElement('button');
+      // Table mode: Hugo puts line numbers in the first <td class="lntd">.
+      // Skip that column — only add a copy button to the code column.
+      var parentTd = pre.closest('td.lntd');
+      if (parentTd && !parentTd.previousElementSibling) { return; }
+
+      var btn = document.createElement('button');
       btn.textContent = 'Copy';
       btn.setAttribute('aria-label', 'Copy code');
       btn.style.cssText = [
@@ -106,35 +111,17 @@
         'background:var(--bg-3)', 'color:var(--text-2)',
         'border:1px solid var(--border)', 'border-radius:5px',
         'font-size:0.72rem', 'font-weight:600', 'padding:0.25rem 0.6rem',
-        'cursor:pointer', 'transition:all 0.2s', 'font-family:var(--font-sans)'
+        'cursor:pointer', 'transition:all 0.2s', 'font-family:var(--font-sans)',
+        'z-index:1'
       ].join(';');
       pre.style.position = 'relative';
       pre.appendChild(btn);
 
       btn.addEventListener('click', function () {
-        // Walk the live DOM tree, collecting text from all nodes except
-        // Chroma line-number spans (.lnt inline mode, .ln table mode, .lnl label).
-        // DOM-walk is more reliable than clone+innerText which has detached-node issues.
-        var text = '';
-        var root = pre.querySelector('code') || pre;
-
-        function walk(node) {
-          if (node.nodeType === 3) {          // text node — collect it
-            text += node.textContent;
-          } else if (node.nodeType === 1) {   // element node
-            var cl = node.classList;
-            if (cl.contains('lnt') || cl.contains('ln') || cl.contains('lnl')) {
-              return;                         // skip line-number spans entirely
-            }
-            if (node === btn) { return; }     // skip the Copy button itself
-            node.childNodes.forEach(walk);
-          }
-        }
-        walk(root);
-
-        // Safety regex: if numbers still leaked (e.g. "1readinessProbe:"), strip them.
-        text = text.replace(/^\d+\t/gm, '');            // digits + tab at line start
-        text = text.replace(/^\d+(?=[^\s\d])/gm, '');  // digits fused to code
+        // Table mode: code column pre contains pure code — no line number spans.
+        // Just use textContent directly. No regex or DOM walk needed.
+        var code = pre.querySelector('code') || pre;
+        var text = code.textContent;
 
         navigator.clipboard.writeText(text).then(function () {
           btn.textContent = 'Copied!';
