@@ -6,8 +6,17 @@
 .highlight { position: relative; }
 .highlight pre { margin: 0; }
 
-/* Line numbers */
-.highlight .lnt { user-select: none; margin-right: 1rem; color: #484f58; }
+/* Line numbers — inline mode (lineNumbersInTable = false) */
+.highlight .lnt {
+  user-select: none;
+  -webkit-user-select: none;
+  display: inline-block;
+  min-width: 2.25em;
+  padding-right: 0.85em;
+  text-align: right;
+  color: #484f58;
+  font-variant-numeric: tabular-nums;
+}
 
 /* Base tokens */
 .chroma { color: #e6edf3; background-color: #161b22; }

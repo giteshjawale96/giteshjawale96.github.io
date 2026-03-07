@@ -90,9 +90,9 @@
 <link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .Permalink }}" title="{{ $.Site.Title }}" />
 {{ end }}
 
-{{- /* Stylesheets — relURL handles subpath deployments */}}
-<link rel="stylesheet" href="{{ "css/syntax.css" | relURL }}" />
-<link rel="stylesheet" href="{{ "css/main.css" | relURL }}" />
+{{- /* Stylesheets — ?v= daily cache-buster so browsers pick up updates */}}
+<link rel="stylesheet" href="{{ "css/syntax.css" | relURL }}?v={{ now.Format "20060102" }}" />
+<link rel="stylesheet" href="{{ "css/main.css" | relURL }}?v={{ now.Format "20060102" }}" />
 
 {{- /* Favicon */}}
 <link rel="icon" type="image/svg+xml" href="{{ "favicon.svg" | relURL }}" />

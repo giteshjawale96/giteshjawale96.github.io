@@ -13,8 +13,7 @@
   function initTheme() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) { applyTheme(stored); return; }
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(prefersDark ? 'dark' : 'light');
+    applyTheme('light'); // light is the default for first-time visitors
   }
 
   initTheme();
