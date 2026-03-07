@@ -1,0 +1,95 @@
+{{ define "main" }}
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-title">{{ .Title }}</h1>
+    {{ with .Description }}<p class="page-desc">{{ . }}</p>{{ end }}
+  </div>
+</div>
+
+<div class="container section">
+  {{ if eq .Kind "taxonomy" }}
+  <div class="taxonomy-cloud">
+    {{ range .Data.Terms.ByCount }}
+    <a href="{{ .Page.Permalink }}" class="taxonomy-item">
+      {{ .Page.Title }} <span class="taxonomy-count">{{ .Count }}</span>
+    </a>
+    {{ end }}
+  </div>
+
+  {{ else if eq .Kind "term" }}
+  <div class="term-header">
+    <span class="term-label">{{ .Data.Singular }}</span>
+    <h2 class="term-name">{{ .Title }}</h2>
+    <p class="term-count">{{ len .Pages }} {{ if eq (len .Pages) 1 }}article{{ else }}articles{{ end }}</p>
+  </div>
+  <div class="post-list">
+    {{ range .Pages }}
+    <div class="post-list-item">
+      <div class="post-list-body">
+        <div class="post-list-meta">
+          <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format $.Site.Params.dateFormat }}</time>
+          {{ if $.Site.Params.showReadingTime }}<span class="meta-dot"></span><span>{{ .ReadingTime }} min read</span>{{ end }}
+        </div>
+        <h2 class="post-list-title"><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
+        <p class="post-list-summary">{{ .Summary | plainify | truncate 160 }}</p>
+        <div class="post-list-tags">{{ range first 3 .Params.tags }}<a href="{{ "/tags/" | relURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>{{ end }}</div>
+      </div>
+      <div class="post-list-thumb">
+        {{ with .Params.cover }}<img src="{{ . }}" alt="{{ $.Title }}" loading="lazy" />
+        {{ else }}<div class="post-list-thumb-placeholder">Post</div>{{ end }}
+      </div>
+    </div>
+    {{ end }}
+  </div>
+
+  {{ else if eq .Section "blog" }}
+  <div class="blog-controls">
+    <div class="filter-strip">
+      <a href="/tags/" class="filter-chip">All Tags</a>
+      <a href="/categories/" class="filter-chip">Categories</a>
+      {{ range first 5 .Site.Taxonomies.tags.ByCount }}
+      <a href="{{ .Page.Permalink }}" class="filter-chip">{{ .Page.Title }}</a>
+      {{ end }}
+    </div>
+    <a href="/search/" class="btn btn-secondary btn-sm">Search</a>
+  </div>
+  <div class="post-list">
+    {{ range .Pages }}
+    <div class="post-list-item">
+      <div class="post-list-body">
+        <div class="post-list-meta">
+          <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format $.Site.Params.dateFormat }}</time>
+          {{ if $.Site.Params.showReadingTime }}<span class="meta-dot"></span><span>{{ .ReadingTime }} min read</span>{{ end }}
+          {{ with index .Params.categories 0 }}<span class="meta-dot"></span><span>{{ . }}</span>{{ end }}
+        </div>
+        <h2 class="post-list-title"><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
+        {{ with .Description }}<p class="post-list-summary">{{ . }}</p>
+        {{ else }}<p class="post-list-summary">{{ .Summary | plainify | truncate 160 }}</p>{{ end }}
+        <div class="post-list-tags">{{ range first 3 .Params.tags }}<a href="{{ "/tags/" | relURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>{{ end }}</div>
+      </div>
+      <div class="post-list-thumb">
+        {{ with .Params.cover }}<img src="{{ . }}" alt="{{ $.Title }}" loading="lazy" />
+        {{ else }}<div class="post-list-thumb-placeholder">Post</div>{{ end }}
+      </div>
+    </div>
+    {{ end }}
+  </div>
+  {{ template "_internal/pagination.html" . }}
+
+  {{ else }}
+  <div class="content-list">
+    {{ range .Pages }}
+    <div class="content-list-item">
+      <div class="content-list-meta">
+        <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "Jan 2006" }}</time>
+      </div>
+      <div class="content-list-body">
+        <h2><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
+        <p>{{ .Summary | plainify | truncate 160 }}</p>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+  {{ end }}
+</div>
+{{ end }}

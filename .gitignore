@@ -1,0 +1,20 @@
+# Hugo build output
+website/public/
+website/resources/
+
+# Local working area — not tracked in git
+workspace/
+
+# Hugo cache
+.hugo_build.lock
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Claude memory (local only)
+.claude/

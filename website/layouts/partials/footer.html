@@ -1,0 +1,45 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <p class="footer-name">{{ .Site.Params.author }}</p>
+        <p class="footer-tagline">{{ .Site.Params.tagline }}</p>
+        <p class="footer-desc">Building Kubernetes infrastructure platforms and exploring AI-assisted operations.</p>
+      </div>
+
+      <div class="footer-links">
+        <h4>Navigation</h4>
+        <ul role="list">
+          {{ range .Site.Menus.main }}
+          <li><a href="{{ .URL }}">{{ .Name }}</a></li>
+          {{ end }}
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h4>Topics</h4>
+        <ul role="list">
+          <li><a href="/tags/ai-infrastructure/">AI Infrastructure</a></li>
+          <li><a href="/tags/kubernetes/">Kubernetes</a></li>
+          <li><a href="/tags/sre/">SRE</a></li>
+          <li><a href="/tags/platform-engineering/">Platform Engineering</a></li>
+          <li><a href="/tags/observability/">Observability</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h4>Connect</h4>
+        <ul role="list">
+          <li><a href="{{ .Site.Params.github }}" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href="{{ .Site.Params.linkedin }}" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+          <li><a href="{{ .Site.Params.twitter }}" target="_blank" rel="noopener noreferrer">Twitter / X</a></li>
+          <li><a href="/index.xml">RSS Feed</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; {{ now.Format "2006" }} {{ .Site.Params.author }}. Built with Hugo. Deployed on GitHub Pages.</p>
+    </div>
+  </div>
+</footer>

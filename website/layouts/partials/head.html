@@ -1,0 +1,103 @@
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+{{- /* Title */}}
+<title>
+  {{- if .IsHome }}{{ .Site.Title }}
+  {{- else }}{{ .Title }} | {{ .Site.Title }}
+  {{- end -}}
+</title>
+
+{{- /* Canonical */}}
+<link rel="canonical" href="{{ .Permalink }}" />
+
+{{- /* Meta description */}}
+<meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify | truncate 160 }}{{ else }}{{ .Site.Params.description }}{{ end }}{{ end }}" />
+<meta name="author" content="{{ .Site.Params.author }}" />
+
+{{- /* OpenGraph */}}
+<meta property="og:site_name" content="{{ .Site.Title }}" />
+<meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}" />
+<meta property="og:description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify | truncate 160 }}{{ else }}{{ .Site.Params.description }}{{ end }}{{ end }}" />
+<meta property="og:url" content="{{ .Permalink }}" />
+<meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}" />
+{{ with .Params.cover }}
+<meta property="og:image" content="{{ . | absURL }}" />
+{{ else }}
+<meta property="og:image" content="{{ .Site.Params.ogImage | absURL }}" />
+{{ end }}
+
+{{- /* Twitter Card */}}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="{{ .Site.Params.twitterHandle }}" />
+<meta name="twitter:creator" content="{{ .Site.Params.twitterHandle }}" />
+<meta name="twitter:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}" />
+<meta name="twitter:description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify | truncate 160 }}{{ else }}{{ .Site.Params.description }}{{ end }}{{ end }}" />
+{{ with .Params.cover }}
+<meta name="twitter:image" content="{{ . | absURL }}" />
+{{ else }}
+<meta name="twitter:image" content="{{ .Site.Params.ogImage | absURL }}" />
+{{ end }}
+
+{{- /* Article structured data */}}
+{{ if .IsPage }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": {{ .Title | jsonify }},
+  "description": {{ with .Description }}{{ . | jsonify }}{{ else }}{{ .Summary | plainify | jsonify }}{{ end }},
+  "author": {
+    "@type": "Person",
+    "name": {{ .Site.Params.author | jsonify }},
+    "url": {{ .Site.BaseURL | jsonify }}
+  },
+  "datePublished": "{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}",
+  "dateModified": "{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}",
+  "url": {{ .Permalink | jsonify }},
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": {{ .Permalink | jsonify }}
+  }
+  {{ with .Params.cover }},
+  "image": {{ . | absURL | jsonify }}
+  {{ end }}
+}
+</script>
+{{ end }}
+
+{{- /* Person structured data on homepage */}}
+{{ if .IsHome }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": {{ .Site.Params.author | jsonify }},
+  "url": {{ .Site.BaseURL | jsonify }},
+  "sameAs": [
+    {{ .Site.Params.github | jsonify }},
+    {{ .Site.Params.linkedin | jsonify }}
+  ],
+  "jobTitle": {{ .Site.Params.tagline | jsonify }},
+  "description": {{ .Site.Params.description | jsonify }}
+}
+</script>
+{{ end }}
+
+{{- /* RSS */}}
+{{ range .AlternativeOutputFormats }}
+<link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .Permalink }}" title="{{ $.Site.Title }}" />
+{{ end }}
+
+{{- /* Stylesheets — relURL handles subpath deployments */}}
+<link rel="stylesheet" href="{{ "css/syntax.css" | relURL }}" />
+<link rel="stylesheet" href="{{ "css/main.css" | relURL }}" />
+
+{{- /* Favicon */}}
+<link rel="icon" type="image/svg+xml" href="{{ "favicon.svg" | relURL }}" />
+
+{{- /* Preconnect for performance */}}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />

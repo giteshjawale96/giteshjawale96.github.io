@@ -1,0 +1,127 @@
+{{ define "main" }}
+<article class="post-article">
+
+  {{- /* ── Header ── */}}
+  <header class="post-header">
+    <div class="container">
+      <div class="post-header-inner">
+        {{ with .Params.categories }}
+        <div class="post-cats">
+          {{ range . }}<a href="{{ "/categories/" | relURL }}{{ . | urlize }}/" class="post-cat-link">{{ . }}</a>{{ end }}
+        </div>
+        {{ end }}
+
+        <h1 class="post-title">{{ .Title }}</h1>
+
+        {{ with .Description }}<p class="post-desc">{{ . }}</p>{{ end }}
+
+        <div class="post-meta">
+          <div class="meta-item">
+            <span class="meta-label">Author</span>
+            <span class="meta-val">{{ .Params.author | default .Site.Params.author }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Published</span>
+            <time class="meta-val" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format .Site.Params.dateFormat }}</time>
+          </div>
+          {{ if .Site.Params.showReadingTime }}
+          <div class="meta-item">
+            <span class="meta-label">Reading time</span>
+            <span class="meta-val">{{ .ReadingTime }} min</span>
+          </div>
+          {{ end }}
+        </div>
+
+        {{ with .Params.tags }}
+        <div class="post-tags-row">
+          {{ range . }}<a href="{{ "/tags/" | relURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>{{ end }}
+        </div>
+        {{ end }}
+      </div>
+    </div>
+
+    {{ with .Params.cover }}
+    <div class="post-cover-wrap">
+      <img src="{{ . }}" alt="{{ $.Title }}" class="post-cover" />
+    </div>
+    {{ end }}
+  </header>
+
+  {{- /* ── Body with optional TOC sidebar ── */}}
+  <div class="post-layout">
+    {{ if and .Site.Params.showTOC (gt (len .TableOfContents) 100) }}
+    <aside class="post-toc" id="toc">
+      <div class="toc-inner">
+        <p class="toc-title">On this page</p>
+        {{ .TableOfContents }}
+      </div>
+    </aside>
+    {{ end }}
+
+    <div class="post-content prose">
+      {{ .Content }}
+    </div>
+  </div>
+
+  {{- /* ── Footer: tags + prev/next ── */}}
+  <footer class="post-footer">
+    {{ with .Params.tags }}
+    <div class="post-footer-tags">
+      <span class="footer-label">Tagged:</span>
+      {{ range . }}<a href="{{ "/tags/" | relURL }}{{ . | urlize }}/" class="tag">{{ . }}</a>{{ end }}
+    </div>
+    {{ end }}
+
+    <nav class="post-nav" aria-label="Post navigation">
+      {{ with .PrevInSection }}
+      <a href="{{ .Permalink }}" class="post-nav-item post-nav-prev">
+        <span class="nav-label">&larr; Previous</span>
+        <span class="nav-title">{{ .Title }}</span>
+      </a>
+      {{ end }}
+      {{ with .NextInSection }}
+      <a href="{{ .Permalink }}" class="post-nav-item post-nav-next">
+        <span class="nav-label">Next &rarr;</span>
+        <span class="nav-title">{{ .Title }}</span>
+      </a>
+      {{ end }}
+    </nav>
+
+    <a href="/blog/" class="btn btn-secondary btn-sm">&larr; Back to Blog</a>
+  </footer>
+
+  {{- /* ── Comments (Giscus) ── */}}
+  {{ if .Site.Params.giscus.repo }}
+  <div class="comments-section">
+    <h3 class="comments-title">Comments</h3>
+    <script src="https://giscus.app/client.js"
+      data-repo="{{ .Site.Params.giscus.repo }}"
+      data-repo-id="{{ .Site.Params.giscus.repoId }}"
+      data-category="{{ .Site.Params.giscus.category }}"
+      data-category-id="{{ .Site.Params.giscus.categoryId }}"
+      data-mapping="pathname"
+      data-strict="0"
+      data-reactions-enabled="1"
+      data-emit-metadata="0"
+      data-input-position="top"
+      data-theme="preferred_color_scheme"
+      data-lang="en"
+      crossorigin="anonymous"
+      async>
+    </script>
+  </div>
+  {{ end }}
+
+</article>
+
+{{- /* Mermaid — loaded only when post sets mermaid: true in frontmatter */}}
+{{ if .Params.mermaid }}
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default'
+  });
+</script>
+{{ end }}
+{{ end }}
